@@ -1,0 +1,61 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    /* Refined institutional — aligned to the DGA brand (digital azure blue) */
+    --background: 206 33% 97%;
+    --foreground: 213 32% 18%;
+    --card: 0 0% 100%;
+    --card-foreground: 213 32% 18%;
+    --popover: 0 0% 100%;
+    --popover-foreground: 213 32% 18%;
+    --primary: 208 72% 40%;
+    --primary-foreground: 0 0% 100%;
+    --secondary: 206 30% 93%;
+    --secondary-foreground: 213 32% 26%;
+    --muted: 206 28% 93%;
+    --muted-foreground: 212 14% 44%;
+    --accent: 202 75% 94%;
+    --accent-foreground: 208 72% 32%;
+    --destructive: 4 64% 46%;
+    --destructive-foreground: 0 0% 100%;
+    --border: 208 24% 87%;
+    --input: 208 24% 82%;
+    --ring: 208 72% 44%;
+    --radius: 0.4rem;
+
+    /* Brand accent — the bright cyan-blue from the logo, for active states & highlights */
+    --brand: 198 83% 52%;
+    --brand-foreground: 213 40% 14%;
+
+    --sidebar: 211 56% 15%;
+    --sidebar-foreground: 206 22% 72%;
+    --sidebar-accent: 210 45% 23%;
+    --sidebar-accent-foreground: 0 0% 100%;
+    --sidebar-border: 210 38% 22%;
+  }
+
+  * {
+    @apply border-border;
+  }
+
+  body {
+    @apply bg-background text-foreground antialiased;
+    font-feature-settings: "ss01" 1, "cv01" 1, "calt" 1;
+    /* faint cool wash echoing the brand blue */
+    background-image:
+      radial-gradient(at 100% 0%, hsl(202 75% 90% / 0.55) 0px, transparent 50%),
+      radial-gradient(at 0% 0%, hsl(208 72% 40% / 0.05) 0px, transparent 45%);
+    background-attachment: fixed;
+  }
+
+  h1,
+  h2,
+  h3,
+  h4 {
+    font-family: theme("fontFamily.display");
+    letter-spacing: -0.01em;
+  }
+}
