@@ -19,6 +19,20 @@ export function useMatieres() {
   });
 }
 
+/** Matières assurées par un enseignant donné (filtre serveur `enseignant_id`). */
+export function useMatieresByEnseignant(enseignantId: string) {
+  return useQuery({
+    queryKey: [...matiereKeys.all, "by-enseignant", enseignantId] as const,
+    enabled: enseignantId !== "",
+    queryFn: async () =>
+      unwrap(
+        await api.GET("/matieres/", {
+          params: { query: { limit: LIST_LIMIT, enseignant_id: enseignantId } },
+        }),
+      ),
+  });
+}
+
 export function useMatiere(matiereId: string) {
   return useQuery({
     queryKey: matiereKeys.detail(matiereId),

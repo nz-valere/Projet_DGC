@@ -1,16 +1,22 @@
 import { createBrowserRouter } from "react-router-dom";
-import { ComingSoonPage } from "@/app/coming-soon-page";
 import { NotFoundPage } from "@/app/not-found-page";
 import { ActivatePage } from "@/features/auth/activate-page";
+import { AttendanceListPage } from "@/features/attendance/attendance-list-page";
 import { RequireAuth, RequireRole } from "@/features/auth/guards";
 import { LoginPage } from "@/features/auth/login-page";
 import { ResetPasswordPage } from "@/features/auth/reset-password-page";
+import { BulletinsPage } from "@/features/bulletins/bulletins-page";
 import { DashboardPage } from "@/features/dashboard/dashboard-page";
 import { ClassesListPage } from "@/features/classes/classes-list-page";
 import { GradesListPage } from "@/features/grades/grades-list-page";
 import { MatiereDetailPage } from "@/features/matieres/matiere-detail-page";
 import { MatieresListPage } from "@/features/matieres/matieres-list-page";
+import { DisciplinesListPage } from "@/features/disciplines/disciplines-list-page";
 import { MySpacePage } from "@/features/me/my-space-page";
+import { NotificationsListPage } from "@/features/notifications/notifications-list-page";
+import { PaymentsListPage } from "@/features/payments/payments-list-page";
+import { PersonnelDetailPage } from "@/features/personnel/personnel-detail-page";
+import { PersonnelListPage } from "@/features/personnel/personnel-list-page";
 import { SeancesListPage } from "@/features/seances/seances-list-page";
 import { StudentDetailPage } from "@/features/students/student-detail-page";
 import { StudentsListPage } from "@/features/students/students-list-page";
@@ -88,10 +94,7 @@ export const router = createBrowserRouter([
         handle: { crumb: "Présences" },
         element: (
           <RequireRole allow={MODULE_ROLES.presences}>
-            <ComingSoonPage
-              title="Présences"
-              description="Saisie des présences par classe et corrections."
-            />
+            <AttendanceListPage />
           </RequireRole>
         ),
       },
@@ -105,14 +108,20 @@ export const router = createBrowserRouter([
         ),
       },
       {
+        path: "bulletins",
+        handle: { crumb: "Bulletins" },
+        element: (
+          <RequireRole allow={MODULE_ROLES.bulletins}>
+            <BulletinsPage />
+          </RequireRole>
+        ),
+      },
+      {
         path: "paiements",
         handle: { crumb: "Paiements" },
         element: (
           <RequireRole allow={MODULE_ROLES.paiements}>
-            <ComingSoonPage
-              title="Paiements"
-              description="Encaissements, reçus et annulations."
-            />
+            <PaymentsListPage />
           </RequireRole>
         ),
       },
@@ -121,10 +130,16 @@ export const router = createBrowserRouter([
         handle: { crumb: "Sanctions" },
         element: (
           <RequireRole allow={MODULE_ROLES.sanctions}>
-            <ComingSoonPage
-              title="Sanctions"
-              description="Dossiers disciplinaires et validations."
-            />
+            <DisciplinesListPage />
+          </RequireRole>
+        ),
+      },
+      {
+        path: "notifications",
+        handle: { crumb: "Notifications" },
+        element: (
+          <RequireRole allow={MODULE_ROLES.notifications}>
+            <NotificationsListPage />
           </RequireRole>
         ),
       },
@@ -154,14 +169,25 @@ export const router = createBrowserRouter([
       {
         path: "personnel",
         handle: { crumb: "Personnel" },
-        element: (
-          <RequireRole allow={MODULE_ROLES.personnel}>
-            <ComingSoonPage
-              title="Personnel"
-              description="Comptes du personnel : création, activation, désactivation."
-            />
-          </RequireRole>
-        ),
+        children: [
+          {
+            index: true,
+            element: (
+              <RequireRole allow={MODULE_ROLES.personnel}>
+                <PersonnelListPage />
+              </RequireRole>
+            ),
+          },
+          {
+            path: ":userId",
+            handle: { crumb: "Fiche personnel" },
+            element: (
+              <RequireRole allow={MODULE_ROLES.personnel}>
+                <PersonnelDetailPage />
+              </RequireRole>
+            ),
+          },
+        ],
       },
       { path: "*", element: <NotFoundPage /> },
     ],

@@ -29,6 +29,8 @@ import { useCurrentUser } from "@/features/auth/auth-context";
 import { useClasseMatieres, useClasses } from "@/features/classes/api";
 import { useStudents } from "@/features/students/api";
 import { useUsers } from "@/features/users/api";
+import { SEMESTRE_LABELS, TYPE_EVALUATION_LABELS } from "@/lib/labels";
+import { academicYearOptions, currentAcademicYear } from "@/lib/utils";
 import { useCreateGrade, useUpdateGrade } from "./api";
 
 const createSchema = z
@@ -40,6 +42,13 @@ const createSchema = z
     valeur: z.coerce.number({ invalid_type_error: "Note invalide." }).min(0, "Note invalide."),
     bareme: z.coerce.number({ invalid_type_error: "Barème invalide." }).min(1, "Barème invalide."),
     appreciation: z.string().optional(),
+    annee_academique: z
+      .string()
+      .regex(/^\d{4}-\d{4}$/, "Format attendu : AAAA-AAAA (ex. 2025-2026)."),
+    semestre: z.enum(["S1", "S2"], { required_error: "Le semestre est requis." }),
+    type_evaluation: z.enum(["CC", "PROJET", "EXAMEN_FINAL"], {
+      required_error: "Le type d'évaluation est requis.",
+    }),
   })
   .refine((values) => values.valeur <= values.bareme, {
     message: "La note dépasse le barème.",
@@ -92,6 +101,9 @@ function GradeCreateForm({
       valeur: "" as unknown as number,
       bareme: 20,
       appreciation: "",
+      annee_academique: currentAcademicYear(),
+      semestre: "S1",
+      type_evaluation: "CC",
     },
   });
 
@@ -118,6 +130,9 @@ function GradeCreateForm({
       valeur: Number(values.valeur),
       bareme: Number(values.bareme),
       appreciation: values.appreciation?.trim() || null,
+      annee_academique: values.annee_academique,
+      semestre: values.semestre,
+      type_evaluation: values.type_evaluation,
     });
     onOpenChange(false);
   });
@@ -220,9 +235,9 @@ function GradeCreateForm({
                     </SelectTrigger>
                   </FormControl>
                   <SelectContent>
-                    {matieres.map((matiere) => (
-                      <SelectItem key={matiere.id} value={matiere.id}>
-                        {matiere.nom}
+                    {matieres.map((entry) => (
+                      <SelectItem key={entry.matiere.id} value={entry.matiere.id}>
+                        {entry.matiere.nom} — coef. {entry.coefficient}
                       </SelectItem>
                     ))}
                   </SelectContent>
@@ -236,6 +251,81 @@ function GradeCreateForm({
               </FormItem>
             )}
           />
+
+          <div className="grid gap-4 sm:grid-cols-3">
+            <FormField
+              control={form.control}
+              name="annee_academique"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Année académique</FormLabel>
+                  <Select value={field.value} onValueChange={field.onChange}>
+                    <FormControl>
+                      <SelectTrigger>
+                        <SelectValue placeholder="Sélectionner" />
+                      </SelectTrigger>
+                    </FormControl>
+                    <SelectContent>
+                      {academicYearOptions().map((year) => (
+                        <SelectItem key={year} value={year}>
+                          {year}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+            <FormField
+              control={form.control}
+              name="semestre"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Semestre</FormLabel>
+                  <Select value={field.value} onValueChange={field.onChange}>
+                    <FormControl>
+                      <SelectTrigger>
+                        <SelectValue placeholder="Sélectionner" />
+                      </SelectTrigger>
+                    </FormControl>
+                    <SelectContent>
+                      {Object.entries(SEMESTRE_LABELS).map(([value, label]) => (
+                        <SelectItem key={value} value={value}>
+                          {label}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+            <FormField
+              control={form.control}
+              name="type_evaluation"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Évaluation</FormLabel>
+                  <Select value={field.value} onValueChange={field.onChange}>
+                    <FormControl>
+                      <SelectTrigger>
+                        <SelectValue placeholder="Sélectionner" />
+                      </SelectTrigger>
+                    </FormControl>
+                    <SelectContent>
+                      {Object.entries(TYPE_EVALUATION_LABELS).map(([value, label]) => (
+                        <SelectItem key={value} value={value}>
+                          {label}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+          </div>
 
           {!isEnseignant ? (
             <FormField

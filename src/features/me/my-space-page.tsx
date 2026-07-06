@@ -20,6 +20,7 @@ import {
 import { Separator } from "@/components/ui/separator";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { MyBulletinTab } from "@/features/bulletins/bulletin-tab";
 import { DocumentsList } from "@/features/students/documents-list";
 import { InscriptionTimeline } from "@/features/students/inscription-timeline";
 import {
@@ -193,12 +194,16 @@ export function MySpacePage() {
       <Tabs defaultValue="notes">
         <TabsList>
           <TabsTrigger value="notes">Notes</TabsTrigger>
+          <TabsTrigger value="bulletin">Bulletin</TabsTrigger>
           <TabsTrigger value="presences">Présences</TabsTrigger>
           <TabsTrigger value="paiements">Paiements</TabsTrigger>
           <TabsTrigger value="sanctions">Sanctions</TabsTrigger>
         </TabsList>
         <TabsContent value="notes">
           <GradesTable query={gradesQuery} />
+        </TabsContent>
+        <TabsContent value="bulletin">
+          <MyBulletinTab />
         </TabsContent>
         <TabsContent value="presences">
           <AttendanceTable query={attendanceQuery} />

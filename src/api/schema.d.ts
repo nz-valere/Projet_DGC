@@ -185,6 +185,29 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/me/bulletin": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * My Bulletin
+         * @description Bulletin de l'étudiant connecté (ou de l'enfant du parent connecté).
+         *
+         *     Ne repose que sur les notes PUBLIE — rien à filtrer de plus ici.
+         *     `annee_academique` par défaut : la promotion de l'étudiant.
+         */
+        get: operations["my_bulletin_me_bulletin_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/me/attendance": {
         parameters: {
             query?: never;
@@ -365,6 +388,28 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/students/{student_id}/bulletin": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Get Student Bulletin
+         * @description Bulletin de l'étudiant (moyenne pondérée + rang dans sa classe).
+         *
+         *     `annee_academique` par défaut : la promotion de l'étudiant.
+         */
+        get: operations["get_student_bulletin_students__student_id__bulletin_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/students/{student_id}/documents": {
         parameters: {
             query?: never;
@@ -503,14 +548,39 @@ export interface paths {
         };
         /**
          * List Classe Matieres
-         * @description Programme de la classe : les matières qui y sont enseignées.
+         * @description Programme de la classe : les matières enseignées + leur coefficient dans la classe.
          */
         get: operations["list_classe_matieres_classes__classe_id__matieres_get"];
         /**
          * Set Classe Matieres
          * @description ADMIN : définit le programme de la classe (remplace l'existant).
+         *
+         *     Chaque matière porte son coefficient DANS CETTE CLASSE ; s'il est omis,
+         *     le coefficient global de la matière (Matiere.coefficient) sert de défaut.
          */
         put: operations["set_classe_matieres_classes__classe_id__matieres_put"];
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/classes/{classe_id}/bulletins": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * List Classe Bulletins
+         * @description Bulletins de toute la classe (moyennes pondérées + rangs) pour une
+         *     promotion et un semestre donnés. Seules les notes PUBLIE comptent ; une
+         *     matière du programme non composée vaut zéro.
+         */
+        get: operations["list_classe_bulletins_classes__classe_id__bulletins_get"];
+        put?: never;
         post?: never;
         delete?: never;
         options?: never;
@@ -708,6 +778,31 @@ export interface paths {
         put?: never;
         /** Create Grade */
         post: operations["create_grade_grades__post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/grades/ponderation": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Get Ponderation
+         * @description Pondération des types d'évaluation (CC / PROJET / EXAMEN_FINAL) dans la
+         *     moyenne d'une matière. Valeurs par défaut : 30 / 20 / 50.
+         */
+        get: operations["get_ponderation_grades_ponderation_get"];
+        /**
+         * Set Ponderation
+         * @description ADMIN/DIRECTION : fixe la pondération (la somme doit valoir 100).
+         */
+        put: operations["set_ponderation_grades_ponderation_put"];
+        post?: never;
         delete?: never;
         options?: never;
         head?: never;
@@ -1080,6 +1175,63 @@ export interface components {
             file: string;
         };
         /**
+         * BulletinLigne
+         * @description Une matière du programme sur le bulletin.
+         */
+        BulletinLigne: {
+            /** Matiere Id */
+            matiere_id: string;
+            /** Code */
+            code: string;
+            /** Nom */
+            nom: string;
+            /** Coefficient */
+            coefficient: number;
+            /** Composee */
+            composee: boolean;
+            /** Moyenne */
+            moyenne: number;
+            /** Detail */
+            detail: components["schemas"]["BulletinNoteType"][];
+        };
+        /**
+         * BulletinNoteType
+         * @description Moyenne (sur 20) d'un type d'évaluation pour une matière.
+         */
+        BulletinNoteType: {
+            type_evaluation: components["schemas"]["TypeEvaluation"];
+            /** Moyenne */
+            moyenne: number;
+            /** Nb Notes */
+            nb_notes: number;
+        };
+        /** BulletinResponse */
+        BulletinResponse: {
+            /** Student Id */
+            student_id: string;
+            /** Matricule */
+            matricule: string;
+            /** Nom */
+            nom: string;
+            /** Prenom */
+            prenom: string;
+            /** Classe Id */
+            classe_id: string;
+            /** Classe Nom */
+            classe_nom: string;
+            /** Annee Academique */
+            annee_academique: string;
+            semestre: components["schemas"]["Semestre"];
+            /** Moyenne Generale */
+            moyenne_generale: number;
+            /** Rang */
+            rang: number;
+            /** Effectif */
+            effectif: number;
+            /** Lignes */
+            lignes: components["schemas"]["BulletinLigne"][];
+        };
+        /**
          * CanalEnvoi
          * @enum {string}
          */
@@ -1099,12 +1251,34 @@ export interface components {
             niveau?: string | null;
         };
         /**
+         * ClasseMatiereItem
+         * @description Une matière du programme, avec son coefficient DANS CETTE CLASSE.
+         *
+         *     Si le coefficient est omis, on reprend le coefficient global de la matière
+         *     (Matiere.coefficient) comme valeur par défaut.
+         */
+        ClasseMatiereItem: {
+            /** Matiere Id */
+            matiere_id: string;
+            /** Coefficient */
+            coefficient?: number | null;
+        };
+        /**
+         * ClasseMatiereResponse
+         * @description Une entrée du programme : la matière et son coefficient dans la classe.
+         */
+        ClasseMatiereResponse: {
+            matiere: components["schemas"]["MatiereResponse"];
+            /** Coefficient */
+            coefficient: number;
+        };
+        /**
          * ClasseMatieres
-         * @description Programme de la classe : liste des matières qui y sont enseignées.
+         * @description Programme de la classe : matières enseignées + coefficient par classe.
          */
         ClasseMatieres: {
-            /** Matiere Ids */
-            matiere_ids: string[];
+            /** Matieres */
+            matieres: components["schemas"]["ClasseMatiereItem"][];
         };
         /** ClasseResponse */
         ClasseResponse: {
@@ -1228,6 +1402,10 @@ export interface components {
             bareme: number;
             /** Appreciation */
             appreciation?: string | null;
+            /** Annee Academique */
+            annee_academique: string;
+            semestre: components["schemas"]["Semestre"];
+            type_evaluation: components["schemas"]["TypeEvaluation"];
         };
         /** GradeResponse */
         GradeResponse: {
@@ -1246,6 +1424,10 @@ export interface components {
             /** Appreciation */
             appreciation: string | null;
             statut: components["schemas"]["StatutNote"];
+            /** Annee Academique */
+            annee_academique: string;
+            semestre: components["schemas"]["Semestre"];
+            type_evaluation: components["schemas"]["TypeEvaluation"];
             /** Valeur Precedente */
             valeur_precedente: number | null;
             /** Modifie Par */
@@ -1555,6 +1737,31 @@ export interface components {
              */
             updated_at: string;
         };
+        /** PonderationResponse */
+        PonderationResponse: {
+            /** Pourcentage Cc */
+            pourcentage_cc: number;
+            /** Pourcentage Projet */
+            pourcentage_projet: number;
+            /** Pourcentage Examen Final */
+            pourcentage_examen_final: number;
+            /** Modifie Par */
+            modifie_par: string | null;
+            /**
+             * Updated At
+             * Format: date-time
+             */
+            updated_at: string;
+        };
+        /** PonderationUpdate */
+        PonderationUpdate: {
+            /** Pourcentage Cc */
+            pourcentage_cc: number;
+            /** Pourcentage Projet */
+            pourcentage_projet: number;
+            /** Pourcentage Examen Final */
+            pourcentage_examen_final: number;
+        };
         /** SeanceCreate */
         SeanceCreate: {
             /** Classe Id */
@@ -1627,6 +1834,11 @@ export interface components {
              */
             updated_at: string;
         };
+        /**
+         * Semestre
+         * @enum {string}
+         */
+        Semestre: "S1" | "S2";
         /**
          * StatutEnvoi
          * @enum {string}
@@ -1772,6 +1984,11 @@ export interface components {
          * @enum {string}
          */
         TypeDocument: "PHOTO" | "CNI" | "DIPLOME" | "CERTIFICAT" | "RECU" | "AUTRE";
+        /**
+         * TypeEvaluation
+         * @enum {string}
+         */
+        TypeEvaluation: "CC" | "PROJET" | "EXAMEN_FINAL";
         /** UserCreate */
         UserCreate: {
             /**
@@ -1782,6 +1999,10 @@ export interface components {
             /** Password */
             password: string;
             role: components["schemas"]["UserRole"];
+            /** Nom */
+            nom: string;
+            /** Prenom */
+            prenom: string;
             /** Matricule */
             matricule?: string | null;
         };
@@ -1794,6 +2015,10 @@ export interface components {
              * Format: email
              */
             email: string;
+            /** Nom */
+            nom: string | null;
+            /** Prenom */
+            prenom: string | null;
             /** Matricule */
             matricule: string | null;
             role: components["schemas"]["UserRole"];
@@ -1820,6 +2045,10 @@ export interface components {
             /** Email */
             email?: string | null;
             role?: components["schemas"]["UserRole"] | null;
+            /** Nom */
+            nom?: string | null;
+            /** Prenom */
+            prenom?: string | null;
             /** Matricule */
             matricule?: string | null;
         };
@@ -2115,6 +2344,38 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["GradeResponse"][];
+                };
+            };
+        };
+    };
+    my_bulletin_me_bulletin_get: {
+        parameters: {
+            query: {
+                semestre: components["schemas"]["Semestre"];
+                annee_academique?: string | null;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["BulletinResponse"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
                 };
             };
         };
@@ -2588,6 +2849,40 @@ export interface operations {
             };
         };
     };
+    get_student_bulletin_students__student_id__bulletin_get: {
+        parameters: {
+            query: {
+                semestre: components["schemas"]["Semestre"];
+                annee_academique?: string | null;
+            };
+            header?: never;
+            path: {
+                student_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["BulletinResponse"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
     list_student_documents_students__student_id__documents_get: {
         parameters: {
             query?: never;
@@ -2962,7 +3257,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["MatiereResponse"][];
+                    "application/json": components["schemas"]["ClasseMatiereResponse"][];
                 };
             };
             /** @description Validation Error */
@@ -2997,7 +3292,41 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["MatiereResponse"][];
+                    "application/json": components["schemas"]["ClasseMatiereResponse"][];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    list_classe_bulletins_classes__classe_id__bulletins_get: {
+        parameters: {
+            query: {
+                annee_academique: string;
+                semestre: components["schemas"]["Semestre"];
+            };
+            header?: never;
+            path: {
+                classe_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["BulletinResponse"][];
                 };
             };
             /** @description Validation Error */
@@ -3555,6 +3884,59 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["GradeResponse"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    get_ponderation_grades_ponderation_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PonderationResponse"];
+                };
+            };
+        };
+    };
+    set_ponderation_grades_ponderation_put: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["PonderationUpdate"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PonderationResponse"];
                 };
             };
             /** @description Validation Error */

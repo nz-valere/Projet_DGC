@@ -17,6 +17,7 @@ import {
   STATUT_PAIEMENT,
   STATUT_PRESENCE,
   STATUT_VALIDATION,
+  TYPE_EVALUATION,
 } from "@/lib/labels";
 import { formatDate, formatDateTime, formatMoney } from "@/lib/utils";
 import { useMatieres } from "@/features/matieres/api";
@@ -63,6 +64,20 @@ export function GradesTable({ query }: { query: ListQuery<GradeResponse> }) {
         </span>
       ),
       sortValue: (grade) => grade.valeur / (grade.bareme || 1),
+    },
+    {
+      id: "periode",
+      header: "Période",
+      cell: (grade) => (
+        <span className="flex items-center gap-1.5 whitespace-nowrap text-xs">
+          <span className="tabular-nums text-muted-foreground">
+            {grade.annee_academique} · {grade.semestre}
+          </span>
+          <EnumBadge map={TYPE_EVALUATION} value={grade.type_evaluation} />
+        </span>
+      ),
+      sortValue: (grade) =>
+        `${grade.annee_academique}-${grade.semestre}-${grade.type_evaluation}`,
     },
     {
       id: "appreciation",

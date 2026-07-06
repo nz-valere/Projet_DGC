@@ -40,7 +40,7 @@ export function useMatiereRelations(matiereId: string): MatiereRelations {
     const teachingClassIds = new Set<string>();
     classes.forEach((classe, index) => {
       const matieres = matieresResults[index]?.data ?? [];
-      if (matieres.some((m) => m.id === matiereId)) teachingClassIds.add(classe.id);
+      if (matieres.some((m) => m.matiere.id === matiereId)) teachingClassIds.add(classe.id);
     });
 
     const teachingClasses = classes.filter((c) => teachingClassIds.has(c.id));

@@ -23,6 +23,8 @@ export type ClasseResponse = Schemas["ClasseResponse"];
 export type ClasseCreate = Schemas["ClasseCreate"];
 export type ClasseUpdate = Schemas["ClasseUpdate"];
 export type ClasseMatieres = Schemas["ClasseMatieres"];
+export type ClasseMatiereItem = Schemas["ClasseMatiereItem"];
+export type ClasseMatiereResponse = Schemas["ClasseMatiereResponse"];
 
 export type SeanceResponse = Schemas["SeanceResponse"];
 export type SeanceCreate = Schemas["SeanceCreate"];
@@ -54,6 +56,14 @@ export type GradeCreate = Schemas["GradeCreate"];
 export type GradeUpdate = Schemas["GradeUpdate"];
 export type GradeValidate = Schemas["GradeValidate"];
 export type StatutNote = Schemas["StatutNote"];
+export type Semestre = Schemas["Semestre"];
+export type TypeEvaluation = Schemas["TypeEvaluation"];
+export type PonderationResponse = Schemas["PonderationResponse"];
+export type PonderationUpdate = Schemas["PonderationUpdate"];
+
+export type BulletinResponse = Schemas["BulletinResponse"];
+export type BulletinLigne = Schemas["BulletinLigne"];
+export type BulletinNoteType = Schemas["BulletinNoteType"];
 
 export type PaymentResponse = Schemas["PaymentResponse"];
 export type PaymentCreate = Schemas["PaymentCreate"];

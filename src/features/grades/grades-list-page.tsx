@@ -36,10 +36,11 @@ import { useCurrentUser } from "@/features/auth/auth-context";
 import { useClasses } from "@/features/classes/api";
 import { useMatieres } from "@/features/matieres/api";
 import { useStudents } from "@/features/students/api";
-import { STATUT_NOTE } from "@/lib/labels";
+import { STATUT_NOTE, TYPE_EVALUATION } from "@/lib/labels";
 import { formatDate } from "@/lib/utils";
 import { useGrades, usePublishGrade, useValidateGrade } from "./api";
 import { GradeFormDialog } from "./grade-form-dialog";
+import { PonderationButton } from "./ponderation-dialog";
 
 const ALL = "__all__";
 
@@ -59,6 +60,8 @@ export function GradesListPage() {
   const [matiere, setMatiere] = React.useState(ALL);
   const [classe, setClasse] = React.useState(ALL);
   const [statut, setStatut] = React.useState(ALL);
+  const [semestre, setSemestre] = React.useState(ALL);
+  const [typeEvaluation, setTypeEvaluation] = React.useState(ALL);
 
   const [formOpen, setFormOpen] = React.useState(false);
   const [editTarget, setEditTarget] = React.useState<GradeResponse | undefined>(undefined);
@@ -102,6 +105,8 @@ export function GradesListPage() {
     return grades.filter((grade) => {
       if (statut !== ALL && grade.statut !== statut) return false;
       if (matiere !== ALL && grade.matiere_id !== matiere) return false;
+      if (semestre !== ALL && grade.semestre !== semestre) return false;
+      if (typeEvaluation !== ALL && grade.type_evaluation !== typeEvaluation) return false;
       const student = studentById.get(grade.student_id);
       if (classe !== ALL && student?.classeId !== classe) return false;
       if (query) {
@@ -111,7 +116,7 @@ export function GradesListPage() {
       }
       return true;
     });
-  }, [grades, statut, matiere, classe, search, studentById, matiereById]);
+  }, [grades, statut, matiere, classe, semestre, typeEvaluation, search, studentById, matiereById]);
 
   const columns: DataTableColumn<GradeResponse>[] = [
     {
@@ -158,6 +163,20 @@ export function GradesListPage() {
         </span>
       ),
       sortValue: (grade) => grade.valeur / (grade.bareme || 1),
+    },
+    {
+      id: "periode",
+      header: "Période",
+      cell: (grade) => (
+        <span className="flex items-center gap-1.5 whitespace-nowrap text-xs">
+          <span className="tabular-nums text-muted-foreground">
+            {grade.annee_academique} · {grade.semestre}
+          </span>
+          <EnumBadge map={TYPE_EVALUATION} value={grade.type_evaluation} />
+        </span>
+      ),
+      sortValue: (grade) =>
+        `${grade.annee_academique}-${grade.semestre}-${grade.type_evaluation}`,
     },
     {
       id: "statut",
@@ -220,6 +239,7 @@ export function GradesListPage() {
   return (
     <div>
       <PageHeader title="Notes" description="Saisie, validation et publication des notes.">
+        {canModerate ? <PonderationButton /> : null}
         <Button onClick={() => setFormOpen(true)}>
           <ClipboardPlus /> Saisir une note
         </Button>
@@ -299,6 +319,27 @@ export function GradesListPage() {
                 {c.nom}
               </SelectItem>
             ))}
+          </SelectContent>
+        </Select>
+        <Select value={semestre} onValueChange={setSemestre}>
+          <SelectTrigger className="w-36" aria-label="Filtrer par semestre">
+            <SelectValue />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value={ALL}>Tous semestres</SelectItem>
+            <SelectItem value="S1">Semestre 1</SelectItem>
+            <SelectItem value="S2">Semestre 2</SelectItem>
+          </SelectContent>
+        </Select>
+        <Select value={typeEvaluation} onValueChange={setTypeEvaluation}>
+          <SelectTrigger className="w-44" aria-label="Filtrer par type d'évaluation">
+            <SelectValue />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value={ALL}>Toutes évaluations</SelectItem>
+            <SelectItem value="CC">Contrôle continu</SelectItem>
+            <SelectItem value="PROJET">Projet</SelectItem>
+            <SelectItem value="EXAMEN_FINAL">Examen final</SelectItem>
           </SelectContent>
         </Select>
       </div>

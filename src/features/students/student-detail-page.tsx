@@ -11,6 +11,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { formatDate } from "@/lib/utils";
 import { CANAL_NOTIFICATION } from "@/lib/labels";
+import { StudentBulletinTab } from "@/features/bulletins/bulletin-tab";
 import { useClasses } from "@/features/classes/api";
 import {
   useStudent,
@@ -216,12 +217,16 @@ export function StudentDetailPage() {
       <Tabs defaultValue="notes">
         <TabsList>
           <TabsTrigger value="notes">Notes</TabsTrigger>
+          <TabsTrigger value="bulletin">Bulletin</TabsTrigger>
           <TabsTrigger value="presences">Présences</TabsTrigger>
           <TabsTrigger value="paiements">Paiements</TabsTrigger>
           <TabsTrigger value="sanctions">Sanctions</TabsTrigger>
         </TabsList>
         <TabsContent value="notes">
           <StudentGradesTab studentId={student.id} />
+        </TabsContent>
+        <TabsContent value="bulletin">
+          <StudentBulletinTab studentId={student.id} />
         </TabsContent>
         <TabsContent value="presences">
           <StudentAttendanceTab studentId={student.id} />

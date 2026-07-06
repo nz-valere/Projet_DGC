@@ -65,7 +65,7 @@ export function SeanceFormDialog({ open, onOpenChange }: SeanceFormDialogProps) 
   const matieresQuery = useClasseMatieres(classeId);
 
   const classes = classesQuery.data ?? [];
-  const matieres = matieresQuery.data ?? [];
+  const matieres = (matieresQuery.data ?? []).map((entry) => entry.matiere);
   const enseignants = enseignantsQuery.data ?? [];
 
   const onSubmit = form.handleSubmit(async (values) => {

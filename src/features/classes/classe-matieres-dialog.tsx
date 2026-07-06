@@ -5,6 +5,7 @@ import { ErrorState } from "@/components/shared/error-state";
 import { FormDialog } from "@/components/shared/form-dialog";
 import { Button } from "@/components/ui/button";
 import { DialogFooter } from "@/components/ui/dialog";
+import { Input } from "@/components/ui/input";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useMatieres } from "@/features/matieres/api";
 import { useClasseMatieres, useSetClasseMatieres } from "./api";
@@ -20,26 +21,46 @@ export function ClasseMatieresDialog({ open, onOpenChange, classe }: ClasseMatie
   const assignedQuery = useClasseMatieres(open ? classe.id : "");
   const setMatieres = useSetClasseMatieres(classe.id);
 
-  const [selected, setSelected] = React.useState<Set<string>>(new Set());
+  /** Matières retenues → coefficient saisi (chaîne pour tolérer la frappe en cours). */
+  const [selected, setSelected] = React.useState<Map<string, string>>(new Map());
 
-  // Initialise la sélection depuis les matières déjà affectées, à l'ouverture.
+  // Initialise la sélection (et les coefficients de la classe) à l'ouverture.
   React.useEffect(() => {
     if (open && assignedQuery.data) {
-      setSelected(new Set(assignedQuery.data.map((m) => m.id)));
+      setSelected(
+        new Map(assignedQuery.data.map((entry) => [entry.matiere.id, String(entry.coefficient)])),
+      );
     }
   }, [open, assignedQuery.data]);
 
-  const toggle = (id: string) => {
+  const toggle = (id: string, defaultCoefficient: number) => {
     setSelected((prev) => {
-      const next = new Set(prev);
+      const next = new Map(prev);
       if (next.has(id)) next.delete(id);
-      else next.add(id);
+      else next.set(id, String(defaultCoefficient));
       return next;
     });
   };
 
+  const setCoefficient = (id: string, value: string) => {
+    setSelected((prev) => {
+      const next = new Map(prev);
+      next.set(id, value);
+      return next;
+    });
+  };
+
+  const invalidCount = [...selected.values()].filter(
+    (raw) => !(Number(raw) > 0) || raw.trim() === "",
+  ).length;
+
   const onSave = async () => {
-    await setMatieres.mutateAsync({ matiere_ids: [...selected] });
+    await setMatieres.mutateAsync({
+      matieres: [...selected.entries()].map(([matiere_id, coefficient]) => ({
+        matiere_id,
+        coefficient: Number(coefficient),
+      })),
+    });
     onOpenChange(false);
   };
 
@@ -50,8 +71,8 @@ export function ClasseMatieresDialog({ open, onOpenChange, classe }: ClasseMatie
     <FormDialog
       open={open}
       onOpenChange={setMatieres.isPending ? () => undefined : onOpenChange}
-      title={`Matières — ${classe.nom}`}
-      description="Sélectionnez les matières enseignées dans cette classe."
+      title={`Programme — ${classe.nom}`}
+      description="Sélectionnez les matières enseignées et leur coefficient dans cette classe (utilisé pour la moyenne du bulletin)."
     >
       {matieresQuery.isError ? (
         <ErrorState error={matieresQuery.error} onRetry={() => void matieresQuery.refetch()} />
@@ -68,23 +89,54 @@ export function ClasseMatieresDialog({ open, onOpenChange, classe }: ClasseMatie
       ) : (
         <div className="max-h-[50vh] space-y-1 overflow-y-auto pr-1">
           {matieres.map((matiere) => {
-            const checked = selected.has(matiere.id);
+            const coefficient = selected.get(matiere.id);
+            const checked = coefficient !== undefined;
+            const invalid = checked && !(Number(coefficient) > 0);
             return (
-              <label
+              <div
                 key={matiere.id}
-                className="flex cursor-pointer items-center gap-3 rounded-md border border-transparent px-3 py-2 text-sm transition-colors hover:bg-accent has-[:checked]:border-brand/30 has-[:checked]:bg-accent"
+                className={
+                  checked
+                    ? "flex items-center gap-3 rounded-md border border-brand/30 bg-accent px-3 py-2 text-sm"
+                    : "flex items-center gap-3 rounded-md border border-transparent px-3 py-2 text-sm transition-colors hover:bg-accent"
+                }
               >
-                <input
-                  type="checkbox"
-                  checked={checked}
-                  onChange={() => toggle(matiere.id)}
-                  className="h-4 w-4 accent-[hsl(var(--primary))]"
-                />
-                <span className="flex-1">
-                  <span className="font-medium">{matiere.nom}</span>{" "}
-                  <span className="font-mono text-xs text-muted-foreground">{matiere.code}</span>
-                </span>
-              </label>
+                <label className="flex min-w-0 flex-1 cursor-pointer items-center gap-3">
+                  <input
+                    type="checkbox"
+                    checked={checked}
+                    onChange={() => toggle(matiere.id, matiere.coefficient)}
+                    className="h-4 w-4 accent-[hsl(var(--primary))]"
+                  />
+                  <span className="min-w-0 flex-1 truncate">
+                    <span className="font-medium">{matiere.nom}</span>{" "}
+                    <span className="font-mono text-xs text-muted-foreground">{matiere.code}</span>
+                  </span>
+                </label>
+                {checked ? (
+                  <label className="flex shrink-0 items-center gap-1.5 text-xs text-muted-foreground">
+                    Coef.
+                    <Input
+                      type="number"
+                      min="0.5"
+                      step="0.5"
+                      value={coefficient}
+                      onChange={(event) => setCoefficient(matiere.id, event.target.value)}
+                      aria-label={`Coefficient de ${matiere.nom}`}
+                      aria-invalid={invalid || undefined}
+                      className={
+                        invalid
+                          ? "h-8 w-20 border-destructive text-right tabular-nums"
+                          : "h-8 w-20 text-right tabular-nums"
+                      }
+                    />
+                  </label>
+                ) : (
+                  <span className="shrink-0 text-xs text-muted-foreground">
+                    coef. global {matiere.coefficient}
+                  </span>
+                )}
+              </div>
             );
           })}
         </div>
@@ -92,7 +144,9 @@ export function ClasseMatieresDialog({ open, onOpenChange, classe }: ClasseMatie
 
       <DialogFooter className="gap-2 pt-4">
         <span className="mr-auto self-center text-xs text-muted-foreground">
-          {selected.size} sélectionnée{selected.size > 1 ? "s" : ""}
+          {invalidCount > 0
+            ? `${invalidCount} coefficient${invalidCount > 1 ? "s" : ""} invalide${invalidCount > 1 ? "s" : ""}`
+            : `${selected.size} matière${selected.size > 1 ? "s" : ""} au programme`}
         </span>
         <Button
           type="button"
@@ -102,7 +156,11 @@ export function ClasseMatieresDialog({ open, onOpenChange, classe }: ClasseMatie
         >
           Annuler
         </Button>
-        <Button type="button" disabled={setMatieres.isPending || loading} onClick={onSave}>
+        <Button
+          type="button"
+          disabled={setMatieres.isPending || loading || invalidCount > 0}
+          onClick={onSave}
+        >
           {setMatieres.isPending ? <Loader2 className="animate-spin" /> : <Save />}
           Enregistrer
         </Button>

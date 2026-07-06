@@ -1,7 +1,7 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 import { api, unwrap } from "@/api/client";
-import type { GradeCreate, GradeUpdate, StatutNote } from "@/api/types";
+import type { GradeCreate, GradeUpdate, PonderationUpdate, StatutNote } from "@/api/types";
 import { studentKeys } from "@/features/students/api";
 
 /** L'API ne renvoie pas de total : on charge large et on filtre côté client. */
@@ -10,6 +10,7 @@ const LIST_LIMIT = 2000;
 export const gradeKeys = {
   all: ["grades"] as const,
   list: () => [...gradeKeys.all, "list"] as const,
+  ponderation: () => [...gradeKeys.all, "ponderation"] as const,
 };
 
 /** Toutes les notes (filtrées ensuite par matière / classe / statut côté client). */
@@ -73,6 +74,29 @@ export function useValidateGrade() {
     onSuccess: (grade) => {
       invalidate();
       toast.success(grade.statut === "REJETE" ? "Note rejetée." : "Note validée.");
+    },
+  });
+}
+
+/** Pondération CC / Projet / Examen final appliquée aux moyennes du bulletin. */
+export function usePonderation(enabled = true) {
+  return useQuery({
+    queryKey: gradeKeys.ponderation(),
+    enabled,
+    queryFn: async () => unwrap(await api.GET("/grades/ponderation", {})),
+  });
+}
+
+export function useSetPonderation() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: async (body: PonderationUpdate) =>
+      unwrap(await api.PUT("/grades/ponderation", { body })),
+    onSuccess: () => {
+      void queryClient.invalidateQueries({ queryKey: gradeKeys.ponderation() });
+      // Les bulletins recalculent la moyenne avec la nouvelle pondération.
+      void queryClient.invalidateQueries({ queryKey: ["bulletins"] });
+      toast.success("Pondération enregistrée — les bulletins sont recalculés.");
     },
   });
 }
