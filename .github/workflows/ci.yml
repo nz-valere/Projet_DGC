@@ -35,6 +35,9 @@ jobs:
       - name: Run tests
         run: npm test -- --watchAll=false
         continue-on-error: false
+        
+      - name: Lint code
+        run: npm run lint
 
       - name: Build React app
         run: npm run build
