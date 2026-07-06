@@ -1,0 +1,59 @@
+# name: CD - Deploy React to Azure VM
+
+# on:
+#   push:
+#     branches:
+#       - main
+
+# permissions:
+#   contents: read
+#   packages: write
+
+# env:
+#   IMAGE_NAME: ghcr.io/${{ github.repository_owner }}/react-app
+
+# jobs:
+#   deploy:
+#     runs-on: ubuntu-latest
+
+#     steps:
+#       - name: Checkout
+#         uses: actions/checkout@v4
+
+#       - name: Login to GHCR
+#         uses: docker/login-action@v3
+#         with:
+#           registry: ghcr.io
+#           username: ${{ github.actor }}
+#           password: ${{ secrets.GITHUB_TOKEN }}
+
+#       - name: Build Docker image
+#         run: |
+#           docker build \
+#             -f .github/workflows/Dockerfile \
+#             -t $IMAGE_NAME:latest \
+#             .
+
+#       - name: Push image
+#         run: |
+#           docker push $IMAGE_NAME:latest
+
+#       - name: Deploy to Azure VM
+#         uses: appleboy/ssh-action@v1.2.0
+#         with:
+#           host: ${{ secrets.AZURE_VM_IP }}
+#           username: ${{ secrets.AZURE_VM_USER }}
+#           key: ${{ secrets.AZURE_VM_SSH_KEY }}
+#           script: |
+#             docker pull $IMAGE_NAME:latest
+
+#             docker stop react-app || true
+#             docker rm react-app || true
+
+#             docker run -d \
+#               --name react-app \
+#               --restart unless-stopped \
+#               -p 80:80 \
+#               $IMAGE_NAME:latest
+
+#             docker image prune -f

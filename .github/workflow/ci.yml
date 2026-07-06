@@ -1,0 +1,50 @@
+name: React CI
+
+on:
+  push:
+    branches:
+      - main
+      - front
+
+  pull_request:
+    branches:
+      - main
+      - front
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    defaults:
+      run:
+        working-directory: .
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Run tests
+        run: npm test -- --watchAll=false
+        continue-on-error: false
+
+      - name: Build React app
+        run: npm run build
+
+      - name: Build Docker image
+        run: |
+          docker build \
+            -f .github/workflows/Dockerfile \
+            -t react-app:${{ github.sha }} \
+            .
+
+      - name: Verify image
+        run: docker images
