@@ -33,9 +33,9 @@ jobs:
         run: npm ci
 
       - name: Run tests
-        run: npm test -- --watchAll=false
+        run: npm test
         continue-on-error: false
-        
+
       - name: Lint code
         run: npm run lint
 
