@@ -88,12 +88,14 @@ export function SeancesListPage() {
       header: "Enseignant",
       cell: (s) => enseignantsById.get(s.enseignant_id) ?? "—",
       sortValue: (s) => enseignantsById.get(s.enseignant_id) ?? "",
+      hideBelow: "lg",
     },
     {
       id: "salle",
       header: "Salle",
       cell: (s) => s.salle ?? "—",
       sortValue: (s) => s.salle ?? "",
+      hideBelow: "md",
     },
   ];
 

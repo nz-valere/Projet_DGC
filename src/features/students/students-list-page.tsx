@@ -119,6 +119,7 @@ export function StudentsListPage() {
       header: "Matricule",
       cell: (student) => <span className="font-mono text-xs">{student.matricule}</span>,
       sortValue: (student) => student.matricule,
+      hideBelow: "md",
     },
     {
       id: "nom",
@@ -135,18 +136,21 @@ export function StudentsListPage() {
       header: "Filière",
       cell: (student) => student.filiere,
       sortValue: (student) => student.filiere,
+      hideBelow: "md",
     },
     {
       id: "classe",
       header: "Classe",
       cell: (student) => classeName(student.classe_id),
       sortValue: (student) => classeName(student.classe_id),
+      hideBelow: "md",
     },
     {
       id: "annee",
       header: "Année",
       cell: (student) => student.annee_academique,
       sortValue: (student) => student.annee_academique,
+      hideBelow: "lg",
     },
     {
       id: "statut",

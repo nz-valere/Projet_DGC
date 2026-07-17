@@ -15,6 +15,7 @@ import { useDisplayName } from "@/features/auth/use-display-name";
 import { useClasses } from "@/features/classes/api";
 import { useGrades } from "@/features/grades/api";
 import { useMatieres } from "@/features/matieres/api";
+import { OnlineNowCard } from "@/features/presence/online-now-card";
 import { useSeances } from "@/features/seances/api";
 import { useStudents } from "@/features/students/api";
 import { ROLE_LABELS } from "@/lib/labels";
@@ -331,7 +332,9 @@ export function DashboardPage() {
 
   const canSeeSeances = (MODULE_ROLES.seances as readonly string[]).includes(user.role);
   const canSeeEtudiants = (MODULE_ROLES.etudiants as readonly string[]).includes(user.role);
-  const hasRail = canSeeSeances || canSeeEtudiants;
+  /** /presence/online est réservé à DIRECTION/ADMIN (cf. backend). */
+  const canSeePresence = user.role === "DIRECTION" || user.role === "ADMIN";
+  const hasRail = canSeeSeances || canSeeEtudiants || canSeePresence;
 
   return (
     <div>
@@ -377,6 +380,7 @@ export function DashboardPage() {
           <aside className="space-y-4" aria-label="Activité du jour">
             {canSeeSeances ? <TodayAgenda /> : null}
             {canSeeEtudiants ? <PendingRequestsCard /> : null}
+            {canSeePresence ? <OnlineNowCard /> : null}
           </aside>
         ) : null}
       </div>

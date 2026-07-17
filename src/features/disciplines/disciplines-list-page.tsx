@@ -111,6 +111,7 @@ export function DisciplinesListPage() {
       header: "Nature",
       cell: (discipline) => discipline.nature,
       sortValue: (discipline) => discipline.nature,
+      hideBelow: "md",
     },
     {
       id: "gravite",
@@ -122,6 +123,7 @@ export function DisciplinesListPage() {
       id: "sanction",
       header: "Sanction",
       cell: (discipline) => discipline.sanction ?? "—",
+      hideBelow: "lg",
     },
     {
       id: "validation",
@@ -146,6 +148,7 @@ export function DisciplinesListPage() {
       header: "Créée le",
       cell: (discipline) => formatDate(discipline.created_at),
       sortValue: (discipline) => discipline.created_at,
+      hideBelow: "md",
     },
     {
       id: "actions",

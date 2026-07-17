@@ -1,4 +1,4 @@
-import { CalendarCheck, ClipboardList, CreditCard, Gavel } from "lucide-react";
+import { CalendarCheck, ClipboardList, CreditCard, Gavel, TriangleAlert } from "lucide-react";
 import * as React from "react";
 import type {
   AttendanceResponse,
@@ -61,6 +61,14 @@ export function GradesTable({ query }: { query: ListQuery<GradeResponse> }) {
       cell: (grade) => (
         <span className="font-medium tabular-nums">
           {grade.valeur} / {grade.bareme}
+          {grade.alerte ? (
+            <span title={grade.alerte} className="ml-1.5 inline-flex align-middle">
+              <TriangleAlert
+                className="h-4 w-4 text-amber-600"
+                aria-label={`Alerte : ${grade.alerte}`}
+              />
+            </span>
+          ) : null}
         </span>
       ),
       sortValue: (grade) => grade.valeur / (grade.bareme || 1),
@@ -78,11 +86,13 @@ export function GradesTable({ query }: { query: ListQuery<GradeResponse> }) {
       ),
       sortValue: (grade) =>
         `${grade.annee_academique}-${grade.semestre}-${grade.type_evaluation}`,
+      hideBelow: "md",
     },
     {
       id: "appreciation",
       header: "Appréciation",
       cell: (grade) => grade.appreciation ?? "—",
+      hideBelow: "lg",
     },
     {
       id: "statut",
@@ -95,6 +105,7 @@ export function GradesTable({ query }: { query: ListQuery<GradeResponse> }) {
       header: "Saisie le",
       cell: (grade) => formatDate(grade.created_at),
       sortValue: (grade) => grade.created_at,
+      hideBelow: "md",
     },
   ];
 
@@ -131,6 +142,7 @@ export function AttendanceTable({ query }: { query: ListQuery<AttendanceResponse
       id: "seance",
       header: "Séance",
       cell: (attendance) => <span className="font-mono text-xs">{attendance.seance_id}</span>,
+      hideBelow: "lg",
     },
     {
       id: "statut",
@@ -142,10 +154,12 @@ export function AttendanceTable({ query }: { query: ListQuery<AttendanceResponse
       id: "motif",
       header: "Motif",
       cell: (attendance) => attendance.motif ?? "—",
+      hideBelow: "md",
     },
     {
       id: "correction",
       header: "Correction",
+      hideBelow: "lg",
       cell: (attendance) =>
         attendance.motif_correction ? (
           <span className="text-xs text-muted-foreground">
@@ -186,6 +200,7 @@ export function PaymentsTable({ query }: { query: ListQuery<PaymentResponse> }) 
       header: "Reçu n°",
       cell: (payment) => <span className="font-mono text-xs">{payment.numero_recu}</span>,
       sortValue: (payment) => payment.numero_recu,
+      hideBelow: "md",
     },
     {
       id: "montant",
@@ -202,11 +217,13 @@ export function PaymentsTable({ query }: { query: ListQuery<PaymentResponse> }) 
         </span>
       ),
       sortValue: (payment) => payment.montant_attendu,
+      hideBelow: "lg",
     },
     {
       id: "mode",
       header: "Mode",
       cell: (payment) => MODE_PAIEMENT[payment.mode_paiement],
+      hideBelow: "md",
     },
     {
       id: "statut",
@@ -261,6 +278,7 @@ export function DisciplinesTable({ query }: { query: ListQuery<DisciplineRespons
       id: "sanction",
       header: "Sanction",
       cell: (discipline) => discipline.sanction ?? "—",
+      hideBelow: "md",
     },
     {
       id: "validation",
@@ -275,6 +293,7 @@ export function DisciplinesTable({ query }: { query: ListQuery<DisciplineRespons
       header: "Date",
       cell: (discipline) => formatDate(discipline.created_at),
       sortValue: (discipline) => discipline.created_at,
+      hideBelow: "md",
     },
   ];
 

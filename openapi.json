@@ -4041,6 +4041,60 @@
         }
       }
     },
+    "/presence/online": {
+      "get": {
+        "tags": [
+          "presence"
+        ],
+        "summary": "List Online",
+        "description": "DIRECTION/ADMIN : liste nominative de tous les connectés + total.",
+        "operationId": "list_online_presence_online_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PresenceOnlineResponse"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ]
+      }
+    },
+    "/presence/etudiants": {
+      "get": {
+        "tags": [
+          "presence"
+        ],
+        "summary": "Etudiants En Ligne",
+        "description": "Tout utilisateur authentifié : nombre d'étudiants en ligne (agrégat, sans\nidentités). C'est la seule vue de présence accessible à un ÉTUDIANT.",
+        "operationId": "etudiants_en_ligne_presence_etudiants_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/EtudiantsEnLigneResponse"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ]
+      }
+    },
     "/health": {
       "get": {
         "tags": [
@@ -4849,6 +4903,25 @@
         ],
         "title": "EnseignantBrief"
       },
+      "EtudiantsEnLigneResponse": {
+        "properties": {
+          "etudiants_en_ligne": {
+            "type": "integer",
+            "title": "Etudiants En Ligne"
+          },
+          "fenetre_minutes": {
+            "type": "integer",
+            "title": "Fenetre Minutes"
+          }
+        },
+        "type": "object",
+        "required": [
+          "etudiants_en_ligne",
+          "fenetre_minutes"
+        ],
+        "title": "EtudiantsEnLigneResponse",
+        "description": "Vue publique (tout utilisateur authentifié, dont ÉTUDIANT) :\nuniquement le nombre d'étudiants en ligne, sans identités."
+      },
       "GradeCreate": {
         "properties": {
           "student_id": {
@@ -5010,6 +5083,17 @@
             "type": "string",
             "format": "date-time",
             "title": "Updated At"
+          },
+          "alerte": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Alerte"
           }
         },
         "type": "object",
@@ -5535,6 +5619,79 @@
         ],
         "title": "NotificationResponse"
       },
+      "OnlineUser": {
+        "properties": {
+          "id": {
+            "type": "string",
+            "title": "Id"
+          },
+          "nom": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Nom"
+          },
+          "prenom": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Prenom"
+          },
+          "email": {
+            "type": "string",
+            "format": "email",
+            "title": "Email"
+          },
+          "role": {
+            "$ref": "#/components/schemas/UserRole"
+          },
+          "derniere_connexion": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date-time"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Derniere Connexion"
+          },
+          "derniere_activite": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date-time"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Derniere Activite"
+          }
+        },
+        "type": "object",
+        "required": [
+          "id",
+          "nom",
+          "prenom",
+          "email",
+          "role",
+          "derniere_connexion",
+          "derniere_activite"
+        ],
+        "title": "OnlineUser"
+      },
       "ParentCreate": {
         "properties": {
           "email": {
@@ -5868,6 +6025,33 @@
           "pourcentage_examen_final"
         ],
         "title": "PonderationUpdate"
+      },
+      "PresenceOnlineResponse": {
+        "properties": {
+          "total": {
+            "type": "integer",
+            "title": "Total"
+          },
+          "fenetre_minutes": {
+            "type": "integer",
+            "title": "Fenetre Minutes"
+          },
+          "utilisateurs": {
+            "items": {
+              "$ref": "#/components/schemas/OnlineUser"
+            },
+            "type": "array",
+            "title": "Utilisateurs"
+          }
+        },
+        "type": "object",
+        "required": [
+          "total",
+          "fenetre_minutes",
+          "utilisateurs"
+        ],
+        "title": "PresenceOnlineResponse",
+        "description": "Vue DIRECTION/ADMIN : liste nominative des connectés + total."
       },
       "SeanceCreate": {
         "properties": {
@@ -6521,6 +6705,30 @@
           "is_active": {
             "type": "boolean",
             "title": "Is Active"
+          },
+          "derniere_connexion": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date-time"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Derniere Connexion"
+          },
+          "derniere_activite": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date-time"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Derniere Activite"
           },
           "created_at": {
             "type": "string",

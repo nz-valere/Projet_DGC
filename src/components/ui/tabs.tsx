@@ -11,7 +11,9 @@ const TabsList = React.forwardRef<
   <TabsPrimitive.List
     ref={ref}
     className={cn(
-      "inline-flex h-9 items-center justify-center rounded-lg bg-muted p-1 text-muted-foreground",
+      // Défilement horizontal sous `sm` quand les onglets débordent ; au-delà,
+      // le rendu (centré, sans débordement) est identique à l'existant.
+      "inline-flex h-9 max-w-full items-center justify-start overflow-x-auto rounded-lg bg-muted p-1 text-muted-foreground sm:max-w-none sm:justify-center sm:overflow-visible",
       className,
     )}
     {...props}

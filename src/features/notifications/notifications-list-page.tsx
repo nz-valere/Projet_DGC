@@ -108,16 +108,18 @@ export function NotificationsListPage() {
       id: "message",
       header: "Message",
       cell: (notification) => (
-        <span className="block max-w-md truncate" title={notification.message}>
+        <span className="block max-w-[16rem] truncate lg:max-w-md" title={notification.message}>
           {notification.message}
         </span>
       ),
+      hideBelow: "md",
     },
     {
       id: "canal",
       header: "Canal",
       cell: (notification) => CANAL_ENVOI[notification.canal],
       sortValue: (notification) => notification.canal,
+      hideBelow: "lg",
     },
     {
       id: "statut",
@@ -134,6 +136,7 @@ export function NotificationsListPage() {
       header: "Créée le",
       cell: (notification) => formatDateTime(notification.created_at),
       sortValue: (notification) => notification.created_at,
+      hideBelow: "md",
     },
     ...(canSend
       ? [

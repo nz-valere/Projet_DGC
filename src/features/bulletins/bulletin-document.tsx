@@ -48,10 +48,14 @@ export function BulletinDocument({ bulletin, hideToolbar, className }: BulletinD
         </div>
       ) : null}
 
-      <article
-        className="print-area overflow-hidden rounded-lg border bg-card shadow-card"
-        aria-label={`Bulletin de ${bulletin.prenom} ${bulletin.nom} — ${SEMESTRE_LABELS[bulletin.semestre]} ${bulletin.annee_academique}`}
-      >
+      {/* Conteneur à défilement horizontal : la mise en page imprimable (type A4)
+          garde ses proportions sur mobile plutôt que d'être écrasée. Les styles
+          @media print de index.css neutralisent ce cadre à l'impression. */}
+      <div className="-mx-4 overflow-x-auto px-4 sm:mx-0 sm:px-0 print:mx-0 print:overflow-visible print:px-0">
+        <article
+          className="print-area min-w-[40rem] overflow-hidden rounded-lg border bg-card shadow-card print:min-w-0"
+          aria-label={`Bulletin de ${bulletin.prenom} ${bulletin.nom} — ${SEMESTRE_LABELS[bulletin.semestre]} ${bulletin.annee_academique}`}
+        >
         {/* Filet institutionnel double, aux couleurs DGA */}
         <div className="h-1.5 bg-primary" aria-hidden />
         <div className="h-px bg-brand" aria-hidden />
@@ -246,6 +250,7 @@ export function BulletinDocument({ bulletin, hideToolbar, className }: BulletinD
           </p>
         </div>
       </article>
+      </div>
     </div>
   );
 }

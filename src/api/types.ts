@@ -81,3 +81,7 @@ export type NotificationResponse = Schemas["NotificationResponse"];
 export type NotificationCreate = Schemas["NotificationCreate"];
 export type CanalEnvoi = Schemas["CanalEnvoi"];
 export type StatutEnvoi = Schemas["StatutEnvoi"];
+
+export type EtudiantsEnLigneResponse = Schemas["EtudiantsEnLigneResponse"];
+export type OnlineUser = Schemas["OnlineUser"];
+export type PresenceOnlineResponse = Schemas["PresenceOnlineResponse"];

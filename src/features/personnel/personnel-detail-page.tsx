@@ -11,10 +11,11 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { useClasses } from "@/features/classes/api";
 import { useGrades } from "@/features/grades/api";
 import { useMatieresByEnseignant } from "@/features/matieres/api";
+import { useOnlinePresence } from "@/features/presence/api";
 import { useSeances } from "@/features/seances/api";
 import { useSetUserActive, useUser } from "@/features/users/api";
 import { STATUT_NOTE } from "@/lib/labels";
-import { cn, formatDate, todayISODate } from "@/lib/utils";
+import { cn, formatDate, formatDateTime, formatRelativeTime, todayISODate } from "@/lib/utils";
 import { PersonnelFormDialog } from "./personnel-form-dialog";
 import { ActiveBadge, RoleBadge } from "./role-badge";
 
@@ -34,6 +35,78 @@ function Stat({ label, value, sub }: { label: string; value: React.ReactNode; su
       <p className="text-xs uppercase tracking-wide text-muted-foreground">{label}</p>
       <p className="mt-1 font-display text-2xl font-semibold tabular-nums">{value}</p>
       {sub ? <p className="mt-0.5 text-xs text-muted-foreground">{sub}</p> : null}
+    </Card>
+  );
+}
+
+/**
+ * Activité du compte : connexion en cours, dernière connexion et dernière
+ * activité (champs exposés par /users). Le module est réservé à DIRECTION/ADMIN,
+ * donc /presence/online est autorisé ici.
+ */
+function AccountActivityCard({
+  userId,
+  derniereConnexion,
+  derniereActivite,
+}: {
+  userId: string;
+  derniereConnexion: string | null | undefined;
+  derniereActivite: string | null | undefined;
+}) {
+  const presenceQuery = useOnlinePresence();
+  const online = (presenceQuery.data?.utilisateurs ?? []).some((u) => u.id === userId);
+
+  return (
+    <Card>
+      <CardHeader className="pb-3">
+        <CardTitle className="text-base">Activité du compte</CardTitle>
+        <CardDescription>
+          Connexions et présence — mis à jour en continu
+          {presenceQuery.data ? ` (fenêtre de ${presenceQuery.data.fenetre_minutes} min)` : ""}.
+        </CardDescription>
+      </CardHeader>
+      <CardContent>
+        <dl className="grid gap-4 sm:grid-cols-3">
+          <div>
+            <dt className="text-xs uppercase tracking-wide text-muted-foreground">Statut</dt>
+            <dd className="mt-1 text-sm font-medium">
+              {online ? (
+                <span className="inline-flex items-center gap-2 text-emerald-700">
+                  <span className="relative flex h-2 w-2" aria-hidden="true">
+                    <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-emerald-400 opacity-75" />
+                    <span className="relative inline-flex h-2 w-2 rounded-full bg-emerald-500" />
+                  </span>
+                  En ligne
+                </span>
+              ) : (
+                <span className="text-muted-foreground">Hors ligne</span>
+              )}
+            </dd>
+          </div>
+          <div>
+            <dt className="text-xs uppercase tracking-wide text-muted-foreground">
+              Dernière connexion
+            </dt>
+            <dd className="mt-1 text-sm font-medium">
+              {derniereConnexion ? formatDateTime(derniereConnexion) : "Jamais connecté"}
+            </dd>
+          </div>
+          <div>
+            <dt className="text-xs uppercase tracking-wide text-muted-foreground">
+              Dernière activité
+            </dt>
+            <dd className="mt-1 text-sm font-medium">
+              {derniereActivite ? (
+                <span title={formatDateTime(derniereActivite)}>
+                  {formatRelativeTime(derniereActivite)}
+                </span>
+              ) : (
+                "—"
+              )}
+            </dd>
+          </div>
+        </dl>
+      </CardContent>
     </Card>
   );
 }
@@ -86,7 +159,7 @@ function EnseignantFootprint({ enseignantId }: { enseignantId: string }) {
 
   return (
     <>
-      <div className="grid grid-cols-3 gap-4">
+      <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
         <Stat label="Matières" value={matieresQuery.isPending ? "…" : matieres.length} sub="assurées" />
         <Stat
           label="Séances à venir"
@@ -288,6 +361,12 @@ export function PersonnelDetailPage() {
           Compte désactivé : ce membre ne peut plus se connecter. Son historique est conservé.
         </div>
       ) : null}
+
+      <AccountActivityCard
+        userId={user.id}
+        derniereConnexion={user.derniere_connexion}
+        derniereActivite={user.derniere_activite}
+      />
 
       {user.role === "ENSEIGNANT" ? (
         <EnseignantFootprint enseignantId={user.id} />

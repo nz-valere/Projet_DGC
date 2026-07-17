@@ -141,7 +141,7 @@ export function MatiereDetailPage() {
         </Button>
       </div>
 
-      <div className="grid grid-cols-2 gap-4 lg:grid-cols-5">
+      <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-5">
         <Stat label="Coefficient" value={matiere.coefficient} />
         <Stat label="Enseignants" value={matiere.enseignants.length} />
         <Stat
@@ -228,12 +228,14 @@ function StudentsTab({
       header: "Classe",
       cell: (s) => (s.classe_id ? (classeName.get(s.classe_id) ?? "—") : "—"),
       sortValue: (s) => (s.classe_id ? (classeName.get(s.classe_id) ?? "") : ""),
+      hideBelow: "md",
     },
     {
       id: "filiere",
       header: "Filière",
       cell: (s) => s.filiere,
       sortValue: (s) => s.filiere,
+      hideBelow: "md",
     },
     {
       id: "note",
@@ -311,12 +313,14 @@ function NotesTab({
       header: "Enseignant",
       cell: (g) => enseignantEmail.get(g.enseignant_id) ?? "—",
       sortValue: (g) => enseignantEmail.get(g.enseignant_id) ?? "",
+      hideBelow: "md",
     },
     {
       id: "date",
       header: "Saisie le",
       cell: (g) => formatDate(g.created_at),
       sortValue: (g) => g.created_at,
+      hideBelow: "md",
     },
   ];
 

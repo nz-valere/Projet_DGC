@@ -28,7 +28,7 @@ export function FormDialog({
 }: FormDialogProps) {
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className={cn("max-h-[90vh] overflow-y-auto sm:max-w-xl", className)}>
+      <DialogContent className={cn("max-h-[90dvh] overflow-y-auto sm:max-w-xl", className)}>
         <DialogHeader>
           <DialogTitle>{title}</DialogTitle>
           {description ? <DialogDescription>{description}</DialogDescription> : null}

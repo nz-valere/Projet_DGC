@@ -4,12 +4,17 @@ import { ROLE_LABELS } from "@/lib/labels";
 import { cn } from "@/lib/utils";
 import { NAV_ITEMS } from "./nav";
 
-export function Sidebar() {
+/**
+ * Contenu partagé de la navigation — réutilisé par la barre latérale fixe
+ * (desktop) et le tiroir mobile (drawer). Ne porte pas le positionnement,
+ * seulement la structure interne (logo, liens, pied de page).
+ */
+export function SidebarContent() {
   const user = useCurrentUser();
   const items = NAV_ITEMS.filter((item) => item.roles.includes(user.role));
 
   return (
-    <aside className="fixed inset-y-0 left-0 z-30 flex w-60 flex-col bg-sidebar text-sidebar-foreground">
+    <>
       <div className="flex items-center gap-3 border-b border-sidebar-border px-5 py-5">
         <div className="rounded-md bg-white p-1 ring-1 ring-white/10">
           <img src="/dga-icon-512.png" alt="" className="h-9 w-9" />
@@ -66,6 +71,19 @@ export function Sidebar() {
         </p>
         <span className="font-medium text-white">{ROLE_LABELS[user.role]}</span>
       </div>
+    </>
+  );
+}
+
+/**
+ * Barre latérale fixe — visible à partir de `lg`. Sous ce point de rupture
+ * elle est masquée au profit du tiroir mobile (voir {@link MobileSidebar}).
+ * Le rendu desktop (≥ lg) est strictement identique à l'existant.
+ */
+export function Sidebar() {
+  return (
+    <aside className="fixed inset-y-0 left-0 z-30 hidden w-60 flex-col bg-sidebar text-sidebar-foreground lg:flex">
+      <SidebarContent />
     </aside>
   );
 }

@@ -59,6 +59,7 @@ export function ClassesListPage() {
       header: "Niveau",
       cell: (classe) => classe.niveau ?? "—",
       sortValue: (classe) => classe.niveau ?? "",
+      hideBelow: "sm",
     },
     {
       id: "actions",

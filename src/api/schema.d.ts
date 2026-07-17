@@ -1071,6 +1071,47 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/presence/online": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * List Online
+         * @description DIRECTION/ADMIN : liste nominative de tous les connectés + total.
+         */
+        get: operations["list_online_presence_online_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/presence/etudiants": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Etudiants En Ligne
+         * @description Tout utilisateur authentifié : nombre d'étudiants en ligne (agrégat, sans
+         *     identités). C'est la seule vue de présence accessible à un ÉTUDIANT.
+         */
+        get: operations["etudiants_en_ligne_presence_etudiants_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/health": {
         parameters: {
             query?: never;
@@ -1385,6 +1426,17 @@ export interface components {
             /** Matricule */
             matricule: string | null;
         };
+        /**
+         * EtudiantsEnLigneResponse
+         * @description Vue publique (tout utilisateur authentifié, dont ÉTUDIANT) :
+         *     uniquement le nombre d'étudiants en ligne, sans identités.
+         */
+        EtudiantsEnLigneResponse: {
+            /** Etudiants En Ligne */
+            etudiants_en_ligne: number;
+            /** Fenetre Minutes */
+            fenetre_minutes: number;
+        };
         /** GradeCreate */
         GradeCreate: {
             /** Student Id */
@@ -1446,6 +1498,8 @@ export interface components {
              * Format: date-time
              */
             updated_at: string;
+            /** Alerte */
+            alerte?: string | null;
         };
         /** GradeUpdate */
         GradeUpdate: {
@@ -1635,6 +1689,25 @@ export interface components {
              */
             updated_at: string;
         };
+        /** OnlineUser */
+        OnlineUser: {
+            /** Id */
+            id: string;
+            /** Nom */
+            nom: string | null;
+            /** Prenom */
+            prenom: string | null;
+            /**
+             * Email
+             * Format: email
+             */
+            email: string;
+            role: components["schemas"]["UserRole"];
+            /** Derniere Connexion */
+            derniere_connexion: string | null;
+            /** Derniere Activite */
+            derniere_activite: string | null;
+        };
         /** ParentCreate */
         ParentCreate: {
             /**
@@ -1761,6 +1834,18 @@ export interface components {
             pourcentage_projet: number;
             /** Pourcentage Examen Final */
             pourcentage_examen_final: number;
+        };
+        /**
+         * PresenceOnlineResponse
+         * @description Vue DIRECTION/ADMIN : liste nominative des connectés + total.
+         */
+        PresenceOnlineResponse: {
+            /** Total */
+            total: number;
+            /** Fenetre Minutes */
+            fenetre_minutes: number;
+            /** Utilisateurs */
+            utilisateurs: components["schemas"]["OnlineUser"][];
         };
         /** SeanceCreate */
         SeanceCreate: {
@@ -2024,6 +2109,10 @@ export interface components {
             role: components["schemas"]["UserRole"];
             /** Is Active */
             is_active: boolean;
+            /** Derniere Connexion */
+            derniere_connexion?: string | null;
+            /** Derniere Activite */
+            derniere_activite?: string | null;
             /**
              * Created At
              * Format: date-time
@@ -4561,6 +4650,46 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    list_online_presence_online_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PresenceOnlineResponse"];
+                };
+            };
+        };
+    };
+    etudiants_en_ligne_presence_etudiants_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["EtudiantsEnLigneResponse"];
                 };
             };
         };

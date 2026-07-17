@@ -134,10 +134,12 @@ export function AttendanceListPage() {
         const classeId = studentById.get(record.student_id)?.classeId;
         return classeId ? (classeById.get(classeId) ?? "") : "";
       },
+      hideBelow: "md",
     },
     {
       id: "seance",
       header: "Séance",
+      hideBelow: "lg",
       cell: (record) => {
         const seance = seanceById.get(record.seance_id);
         return seance ? (
@@ -161,10 +163,12 @@ export function AttendanceListPage() {
       id: "motif",
       header: "Motif",
       cell: (record) => record.motif ?? "—",
+      hideBelow: "md",
     },
     {
       id: "correction",
       header: "Correction",
+      hideBelow: "lg",
       cell: (record) =>
         record.motif_correction ? (
           <span className="text-xs text-muted-foreground" title={record.motif_correction}>

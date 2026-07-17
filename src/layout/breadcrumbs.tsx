@@ -1,6 +1,7 @@
 import { ChevronRight } from "lucide-react";
 import * as React from "react";
 import { Link, useMatches } from "react-router-dom";
+import { cn } from "@/lib/utils";
 
 export interface CrumbHandle {
   crumb: string;
@@ -28,20 +29,31 @@ export function Breadcrumbs() {
   if (crumbs.length === 0) return null;
 
   return (
-    <nav aria-label="Fil d'Ariane" className="flex items-center gap-1.5 text-sm">
+    <nav aria-label="Fil d'Ariane" className="flex min-w-0 items-center gap-1.5 text-sm">
       {crumbs.map((crumb, index) => {
         const isLast = index === crumbs.length - 1;
         return (
           <React.Fragment key={crumb.id}>
             {index > 0 ? (
-              <ChevronRight className="h-3.5 w-3.5 text-muted-foreground" aria-hidden="true" />
+              // Séparateurs et niveaux intermédiaires masqués sur mobile :
+              // seule la page courante reste affichée sous `sm`.
+              <ChevronRight
+                className="hidden h-3.5 w-3.5 shrink-0 text-muted-foreground sm:block"
+                aria-hidden="true"
+              />
             ) : null}
             {isLast ? (
-              <span className="font-medium text-foreground" aria-current="page">
+              <span className="truncate font-medium text-foreground" aria-current="page">
                 {crumb.label}
               </span>
             ) : (
-              <Link to={crumb.path} className="text-muted-foreground hover:text-foreground">
+              <Link
+                to={crumb.path}
+                className={cn(
+                  "shrink-0 text-muted-foreground hover:text-foreground",
+                  "hidden sm:inline",
+                )}
+              >
                 {crumb.label}
               </Link>
             )}

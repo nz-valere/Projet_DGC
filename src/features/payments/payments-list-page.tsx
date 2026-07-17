@@ -104,6 +104,7 @@ export function PaymentsListPage() {
       header: "Reçu n°",
       cell: (payment) => <span className="font-mono text-xs">{payment.numero_recu}</span>,
       sortValue: (payment) => payment.numero_recu,
+      hideBelow: "md",
     },
     {
       id: "etudiant",
@@ -132,11 +133,13 @@ export function PaymentsListPage() {
       header: "Mode",
       cell: (payment) => MODE_PAIEMENT[payment.mode_paiement],
       sortValue: (payment) => payment.mode_paiement,
+      hideBelow: "lg",
     },
     {
       id: "reference",
       header: "Référence",
       cell: (payment) => <span className="font-mono text-xs">{payment.reference}</span>,
+      hideBelow: "lg",
     },
     {
       id: "statut",
@@ -153,6 +156,7 @@ export function PaymentsListPage() {
       header: "Date",
       cell: (payment) => formatDate(payment.created_at),
       sortValue: (payment) => payment.created_at,
+      hideBelow: "md",
     },
     {
       id: "actions",

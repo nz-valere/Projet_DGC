@@ -12,6 +12,16 @@ import {
 } from "@/components/ui/table";
 import { cn } from "@/lib/utils";
 
+/** Point de rupture en dessous duquel une colonne secondaire est masquée. */
+export type HideBelowBreakpoint = "sm" | "md" | "lg" | "xl";
+
+const HIDE_BELOW_CLASS: Record<HideBelowBreakpoint, string> = {
+  sm: "hidden sm:table-cell",
+  md: "hidden md:table-cell",
+  lg: "hidden lg:table-cell",
+  xl: "hidden xl:table-cell",
+};
+
 export interface DataTableColumn<T> {
   id: string;
   header: string;
@@ -20,6 +30,12 @@ export interface DataTableColumn<T> {
   sortValue?: (row: T) => string | number | null;
   className?: string;
   headerClassName?: string;
+  /**
+   * Masque la colonne sous ce point de rupture (mobile / petite tablette).
+   * Réservez-le aux colonnes secondaires : l'identité de la ligne, le statut
+   * et les actions doivent rester visibles.
+   */
+  hideBelow?: HideBelowBreakpoint;
 }
 
 interface DataTableProps<T> {
@@ -95,7 +111,7 @@ export function DataTable<T>({
 
   return (
     <div className="space-y-3">
-      <div className="overflow-hidden rounded-lg border bg-card shadow-card">
+      <div className="overflow-x-auto rounded-lg border bg-card shadow-card">
         <Table>
           <TableHeader>
             <TableRow className="bg-muted/50 hover:bg-muted/50">
@@ -104,6 +120,7 @@ export function DataTable<T>({
                   key={column.id}
                   className={cn(
                     "text-[0.7rem] font-semibold uppercase tracking-wider",
+                    column.hideBelow && HIDE_BELOW_CLASS[column.hideBelow],
                     column.headerClassName,
                   )}
                 >
@@ -149,7 +166,13 @@ export function DataTable<T>({
                   onClick={onRowClick ? () => onRowClick(row) : undefined}
                 >
                   {columns.map((column) => (
-                    <TableCell key={column.id} className={column.className}>
+                    <TableCell
+                      key={column.id}
+                      className={cn(
+                        column.hideBelow && HIDE_BELOW_CLASS[column.hideBelow],
+                        column.className,
+                      )}
+                    >
                       {column.cell(row)}
                     </TableCell>
                   ))}
@@ -160,7 +183,7 @@ export function DataTable<T>({
         </Table>
       </div>
       {sorted.length > pageSize ? (
-        <div className="flex items-center justify-between text-sm text-muted-foreground">
+        <div className="flex flex-col gap-3 text-sm text-muted-foreground sm:flex-row sm:items-center sm:justify-between">
           <span>
             {currentPage * pageSize + 1}–{Math.min((currentPage + 1) * pageSize, sorted.length)} sur{" "}
             {sorted.length}

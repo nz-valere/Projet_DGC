@@ -25,9 +25,10 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { Input } from "@/components/ui/input";
+import { useOnlinePresence } from "@/features/presence/api";
 import { useSetUserActive, useUsers } from "@/features/users/api";
 import { ROLE_LABELS } from "@/lib/labels";
-import { formatDate } from "@/lib/utils";
+import { formatDate, formatDateTime, formatRelativeTime } from "@/lib/utils";
 import { PersonnelFormDialog, STAFF_ROLES } from "./personnel-form-dialog";
 import { ActiveBadge, RoleBadge } from "./role-badge";
 
@@ -37,6 +38,13 @@ export function PersonnelListPage() {
   const navigate = useNavigate();
   const usersQuery = useUsers();
   const setActive = useSetUserActive();
+  // Le module Personnel est réservé à DIRECTION/ADMIN : /presence/online est autorisé.
+  const presenceQuery = useOnlinePresence();
+
+  const onlineIds = React.useMemo(
+    () => new Set((presenceQuery.data?.utilisateurs ?? []).map((u) => u.id)),
+    [presenceQuery.data],
+  );
 
   const [search, setSearch] = React.useState("");
   const [role, setRole] = React.useState(ALL);
@@ -75,17 +83,26 @@ export function PersonnelListPage() {
     {
       id: "membre",
       header: "Membre",
-      cell: (user) => (
-        <span className="flex items-center gap-3">
-          <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-accent text-xs font-semibold uppercase text-accent-foreground">
-            {user.email.slice(0, 2)}
+      cell: (user) => {
+        const online = onlineIds.has(user.id);
+        return (
+          <span className="flex items-center gap-3">
+            <span className="relative flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-accent text-xs font-semibold uppercase text-accent-foreground">
+              {user.email.slice(0, 2)}
+              {online ? (
+                <span
+                  className="absolute -bottom-0.5 -right-0.5 h-2.5 w-2.5 rounded-full border-2 border-card bg-emerald-500"
+                  title="En ligne"
+                />
+              ) : null}
+            </span>
+            <span className="min-w-0">
+              <span className="block truncate font-medium">{user.email.split("@")[0]}</span>
+              <span className="block truncate text-xs text-muted-foreground">{user.email}</span>
+            </span>
           </span>
-          <span className="min-w-0">
-            <span className="block truncate font-medium">{user.email.split("@")[0]}</span>
-            <span className="block truncate text-xs text-muted-foreground">{user.email}</span>
-          </span>
-        </span>
-      ),
+        );
+      },
       sortValue: (user) => user.email,
     },
     {
@@ -100,6 +117,7 @@ export function PersonnelListPage() {
       cell: (user) =>
         user.matricule ? <span className="font-mono text-xs">{user.matricule}</span> : "—",
       sortValue: (user) => user.matricule ?? "",
+      hideBelow: "md",
     },
     {
       id: "statut",
@@ -108,10 +126,36 @@ export function PersonnelListPage() {
       sortValue: (user) => (user.is_active ? 0 : 1),
     },
     {
+      id: "activite",
+      header: "Dernière activité",
+      cell: (user) => {
+        if (onlineIds.has(user.id)) {
+          return (
+            <span className="inline-flex items-center gap-1.5 text-xs font-medium text-emerald-700">
+              <span className="h-1.5 w-1.5 rounded-full bg-emerald-500" aria-hidden="true" />
+              En ligne
+            </span>
+          );
+        }
+        const last = user.derniere_activite ?? user.derniere_connexion;
+        return last ? (
+          <span className="text-xs text-muted-foreground" title={formatDateTime(last)}>
+            {formatRelativeTime(last)}
+          </span>
+        ) : (
+          <span className="text-xs text-muted-foreground">Jamais connecté</span>
+        );
+      },
+      // Jamais connecté en dernier : on trie sur l'horodatage décroissant.
+      sortValue: (user) => user.derniere_activite ?? user.derniere_connexion ?? "",
+      hideBelow: "lg",
+    },
+    {
       id: "cree",
       header: "Créé le",
       cell: (user) => formatDate(user.created_at),
       sortValue: (user) => user.created_at,
+      hideBelow: "xl",
     },
     {
       id: "actions",

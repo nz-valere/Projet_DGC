@@ -6,6 +6,7 @@ import {
   Pencil,
   Search,
   Send,
+  TriangleAlert,
   XCircle,
 } from "lucide-react";
 import * as React from "react";
@@ -62,6 +63,7 @@ export function GradesListPage() {
   const [statut, setStatut] = React.useState(ALL);
   const [semestre, setSemestre] = React.useState(ALL);
   const [typeEvaluation, setTypeEvaluation] = React.useState(ALL);
+  const [onlyAlertes, setOnlyAlertes] = React.useState(false);
 
   const [formOpen, setFormOpen] = React.useState(false);
   const [editTarget, setEditTarget] = React.useState<GradeResponse | undefined>(undefined);
@@ -100,9 +102,15 @@ export function GradesListPage() {
     return counts;
   }, [grades]);
 
+  const alertesCount = React.useMemo(
+    () => grades.filter((grade) => Boolean(grade.alerte)).length,
+    [grades],
+  );
+
   const filtered = React.useMemo(() => {
     const query = search.trim().toLowerCase();
     return grades.filter((grade) => {
+      if (onlyAlertes && !grade.alerte) return false;
       if (statut !== ALL && grade.statut !== statut) return false;
       if (matiere !== ALL && grade.matiere_id !== matiere) return false;
       if (semestre !== ALL && grade.semestre !== semestre) return false;
@@ -116,7 +124,18 @@ export function GradesListPage() {
       }
       return true;
     });
-  }, [grades, statut, matiere, classe, semestre, typeEvaluation, search, studentById, matiereById]);
+  }, [
+    grades,
+    onlyAlertes,
+    statut,
+    matiere,
+    classe,
+    semestre,
+    typeEvaluation,
+    search,
+    studentById,
+    matiereById,
+  ]);
 
   const columns: DataTableColumn<GradeResponse>[] = [
     {
@@ -138,12 +157,14 @@ export function GradesListPage() {
         const classeId = studentById.get(grade.student_id)?.classeId;
         return classeId ? (classeById.get(classeId) ?? "") : "";
       },
+      hideBelow: "lg",
     },
     {
       id: "matiere",
       header: "Matière",
       cell: (grade) => matiereById.get(grade.matiere_id) ?? "—",
       sortValue: (grade) => matiereById.get(grade.matiere_id) ?? "",
+      hideBelow: "md",
     },
     {
       id: "note",
@@ -158,6 +179,11 @@ export function GradesListPage() {
               title={grade.motif_modification ?? undefined}
             >
               (avant : {grade.valeur_precedente})
+            </span>
+          ) : null}
+          {grade.alerte ? (
+            <span title={grade.alerte} className="ml-1.5 inline-flex align-middle">
+              <TriangleAlert className="h-4 w-4 text-amber-600" aria-label={`Alerte : ${grade.alerte}`} />
             </span>
           ) : null}
         </span>
@@ -177,6 +203,7 @@ export function GradesListPage() {
       ),
       sortValue: (grade) =>
         `${grade.annee_academique}-${grade.semestre}-${grade.type_evaluation}`,
+      hideBelow: "lg",
     },
     {
       id: "statut",
@@ -189,6 +216,7 @@ export function GradesListPage() {
       header: "Saisie le",
       cell: (grade) => formatDate(grade.created_at),
       sortValue: (grade) => grade.created_at,
+      hideBelow: "xl",
     },
     {
       id: "actions",
@@ -246,7 +274,8 @@ export function GradesListPage() {
       </PageHeader>
 
       {/* Filtres rapides par statut, avec compteurs */}
-      <div className="mb-4 flex flex-wrap items-center gap-2" role="group" aria-label="Filtrer par statut">
+      <div className="mb-4 flex flex-wrap items-center gap-2">
+        <div className="flex flex-wrap items-center gap-2" role="group" aria-label="Filtrer par statut">
         {(
           [
             [ALL, "Toutes", grades.length],
@@ -282,6 +311,36 @@ export function GradesListPage() {
             </button>
           );
         })}
+        </div>
+
+        {/* Notes signalées par le backend (champ `alerte`) : se combine avec le statut. */}
+        {alertesCount > 0 ? (
+          <>
+            <span className="hidden h-5 w-px bg-border sm:block" aria-hidden="true" />
+            <button
+              type="button"
+              onClick={() => setOnlyAlertes((previous) => !previous)}
+              aria-pressed={onlyAlertes}
+              className={
+                onlyAlertes
+                  ? "inline-flex items-center gap-1.5 rounded-full border border-amber-500 bg-amber-500 px-3 py-1 text-xs font-medium text-white transition-colors"
+                  : "inline-flex items-center gap-1.5 rounded-full border border-amber-300 bg-amber-50 px-3 py-1 text-xs font-medium text-amber-800 transition-colors hover:border-amber-500"
+              }
+            >
+              <TriangleAlert className="h-3.5 w-3.5" aria-hidden="true" />
+              Alertes
+              <span
+                className={
+                  onlyAlertes
+                    ? "rounded-full bg-white/25 px-1.5 tabular-nums"
+                    : "rounded-full bg-amber-200/70 px-1.5 tabular-nums"
+                }
+              >
+                {alertesCount}
+              </span>
+            </button>
+          </>
+        ) : null}
       </div>
 
       <div className="mb-4 flex flex-wrap items-center gap-3">
